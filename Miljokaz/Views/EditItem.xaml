@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Miljokaz.Views.EditItem" 
+             NavigationPage.HasBackButton="False"
+             NavigationPage.HasNavigationBar="False"
+             Title="Edit Item">
+
+    <ContentPage.Resources>
+        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+        <Style x:Key="ValidEntryStyle" TargetType="Entry">
+            <Setter Property="TextColor" Value="Green" />
+        </Style>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout>
+
+        <ImageButton Source="backbutton.png" Command="{Binding CancelEditItem}" VerticalOptions="Start"  HorizontalOptions="Start" Aspect="AspectFit"  HeightRequest="40"  Margin="5,5,0,0" />
+        <Label Text="Edit item" Margin="150,20,0,0" FontSize="24" FontAttributes="Bold" />
+        <HorizontalStackLayout Margin="20,30,0,10" >
+            <Label Text="Category:" VerticalTextAlignment="Center" Margin="0,0,30,10"  />
+            <Picker WidthRequest="250"  ItemsSource="{Binding UserCategories}" ItemDisplayBinding="{Binding CategoryName}" SelectedItem="{Binding SelectedCategory }" />
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Margin="20,0,0,10" >
+            <Label Text="Desription:" VerticalTextAlignment="Center" Margin="0,0,22,10"  />
+            <Entry Text="{Binding EditDescription}"  Margin="0,0,10,0" WidthRequest="250" VerticalTextAlignment="Center" />
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Margin="20,0,0,10" >
+            <Label Text="Date:" VerticalTextAlignment="Center" Margin="0,0,30,10"  />
+            <DatePicker   Date="{Binding EditDate}"  Margin="30,0,10,0" />
+
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout Margin="20,0,0,10" >
+            <Label Text="Amount:" VerticalTextAlignment="Center" Margin="0,0,38,10"  />
+            <Entry Keyboard="Numeric" WidthRequest="80" Placeholder="0,00 €" Text="{Binding EditAmount}" 
+                   HorizontalTextAlignment="End" VerticalTextAlignment="Center"  >
+                <Entry.Behaviors>
+                    <toolkit:NumericValidationBehavior 
+                 InvalidStyle="{StaticResource InvalidEntryStyle}"
+                 ValidStyle="{StaticResource ValidEntryStyle}"
+                 Flags="ValidateOnValueChanged"
+                 MinimumValue="1.0"
+                 MaximumValue="1000.0"
+                 MaximumDecimalPlaces="2" />
+                </Entry.Behaviors>
+            </Entry>
+            <Label Text=" €"  VerticalTextAlignment="Center" Margin="0,0,0,0" />
+        </HorizontalStackLayout>
+        
+        <HorizontalStackLayout >
+            <Button Text="Save" Command="{Binding SaveEditedTypeCommand}"  HorizontalOptions="Start" Margin="115,10,10,0" BackgroundColor="#369df0" />
+            <Button Text="Delete" Command="{Binding DeleteEditItem}"  HorizontalOptions="Start" Margin="100,10,0,0" BackgroundColor="red" />
+
+        </HorizontalStackLayout>
+
+
+
+    </VerticalStackLayout>
+</ContentPage>
