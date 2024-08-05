@@ -21,13 +21,13 @@
                 </HorizontalStackLayout>
 
                     <HorizontalStackLayout  >
-                        <ImageButton Source="uparrow.png" Command="{Binding NEMA}" VerticalOptions="Center"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="15,5,0,5" />
+                        <ImageButton Source="uparrow.png" Command="{Binding CategoryDesc}" VerticalOptions="Center"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="15,5,0,5" />
 
-                        <ImageButton Source="downarrow.png" Command="{Binding NEMA}" VerticalOptions="Start"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="10,5,0,5" />
+                        <ImageButton Source="downarrow.png" Command="{Binding CategoryAsc}" VerticalOptions="Start"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="10,5,0,5" />
 
-                        <ImageButton Source="uparrow.png" Command="{Binding NEMA}" VerticalOptions="Start"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="160,5,0,5" />
+                        <ImageButton Source="uparrow.png" Command="{Binding DateDesc}" VerticalOptions="Start"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="160,5,0,5" />
 
-                        <ImageButton Source="downarrow.png" Command="{Binding NEMA}" VerticalOptions="Start"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="10,5,0,5" />
+                        <ImageButton Source="downarrow.png" Command="{Binding DateAsc}" VerticalOptions="Start"  HorizontalOptions="Start" Aspect="AspectFit" WidthRequest="20" Margin="10,5,0,5" />
                     </HorizontalStackLayout>
 
                 </VerticalStackLayout>

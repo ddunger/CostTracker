@@ -54,7 +54,7 @@
         </HorizontalStackLayout>
         
         <HorizontalStackLayout >
-            <Button Text="Save" Command="{Binding SaveEditedTypeCommand}"  HorizontalOptions="Start" Margin="115,10,10,0" BackgroundColor="#369df0" />
+            <Button Text="Save" Command="{Binding SaveEditedItem}"  HorizontalOptions="Start" Margin="115,10,10,0" BackgroundColor="#369df0" />
             <Button Text="Delete" Command="{Binding DeleteEditItem}"  HorizontalOptions="Start" Margin="100,10,0,0" BackgroundColor="red" />
 
         </HorizontalStackLayout>

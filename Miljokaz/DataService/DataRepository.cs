@@ -49,11 +49,12 @@ namespace Miljokaz.Data
 		}
 
 	
-		public void Delete(int itemId) // dodati iz koje tablice
+		public void DeleteItem(int itemId) 
 		{
-			conn = new SQLiteConnection(_dbPath);
-
-			conn.Delete(new { Id = itemId });
+			using (var conn = new SQLiteConnection(_dbPath))
+			{
+				conn.Delete<ItemModel>(itemId);
+			}
 		}
 
 		public int ColorCount() //za provjeru treba li kreirati tablice ako je count 0

@@ -15,7 +15,7 @@ namespace Miljokaz.ViewModels
 {
 	public class MainPageViewModel : INotifyPropertyChanged
 	{
-	
+
 
 		#region LISTE
 
@@ -52,7 +52,7 @@ namespace Miljokaz.ViewModels
 					_selectedItem = value;
 					OnPropertyChanged(nameof(SelectedItem));
 					Debug.WriteLine("---------------------List item selected");
-					SelectedEditItem();
+					EditSelectedItem();
 				}
 			}
 		}
@@ -101,7 +101,7 @@ namespace Miljokaz.ViewModels
 				}
 			}
 		}
-		
+
 
 		public ObservableCollection<DisplayModel> DisplayAvailableColors { get; set; }
 
@@ -271,8 +271,54 @@ namespace Miljokaz.ViewModels
 				}
 			}
 		}
-		public DateTime EditDate { get; set; }
-		public float EditAmount { get; set; }
+
+		//edit
+
+		private DateTime editDate;
+		public DateTime EditDate
+		{
+			get { return editDate; }
+			set
+			{
+				if (editDate != value)
+				{
+					editDate = value;
+					OnPropertyChanged(nameof(EditDate));
+
+
+				}
+			}
+		}
+
+		private string editDescription;
+
+		public string EditDescription
+		{
+			get { return editDescription; }
+			set
+			{
+				if (editDescription != value)
+				{
+					editDescription = value;
+					OnPropertyChanged(nameof(EditDescription));
+				}
+			}
+		}
+		private float editAmount;
+
+		public float EditAmount
+		{
+			get { return editAmount; }
+			set
+			{
+				if (editAmount != value)
+				{
+					editAmount = value;
+					OnPropertyChanged(nameof(EditAmount));
+				}
+			}
+		}
+
 		#endregion
 
 
@@ -283,10 +329,14 @@ namespace Miljokaz.ViewModels
 		public ICommand SelectNewItem { get; set; }
 		public ICommand SaveNewCategoryCommand { get; set; }
 		public ICommand SaveNewItemCommand { get; set; }
-		public ICommand SaveEditedTypeCommand { get; set; }
+		public ICommand SaveEditedItem { get; set; }
 		public ICommand CancelEditItem { get; set; }
 		public ICommand DeleteEditItem { get; set; }
 		public ICommand BackButton { get; set; }
+		public ICommand DateDesc { get; set; }
+		public ICommand DateAsc { get; set; }
+		public ICommand CategoryDesc { get; set; }
+		public ICommand CategoryAsc { get; set; }
 
 
 		#endregion
@@ -299,11 +349,17 @@ namespace Miljokaz.ViewModels
 			SelectNewItem = new Command(SelectedNewItem);
 			SaveNewCategoryCommand = new Command(InsertNewCategory);
 			SaveNewItemCommand = new Command(InsertNewItem);
-			SaveEditedTypeCommand = new Command(SaveEditedType);
+			SaveEditedItem = new Command(InsertEditedItem);
 			CancelEditItem = new Command(CancelEdit);
-			DeleteEditItem = new Command(DeleteEdit);
+			DeleteEditItem = new Command(DeleteItem);
 			BackButton = new Command(GoBack);
 
+			DateDesc = new Command(SortByDateDescending);
+			DateAsc = new Command(SortByDateAscending);
+			CategoryDesc = new Command(SortByCategoryDescending);
+			CategoryAsc = new Command(SortByCategoryAscending);
+
+			
 			try
 			{
 				UserItems = new List<ItemModel>();
@@ -315,7 +371,7 @@ namespace Miljokaz.ViewModels
 				UserItems = App.DataRepository.GetAllItems();
 				UserCategories = App.DataRepository.GetAllCategories();
 				InitialiseColors();
-				ConvertToDisplayData();
+				SortByDateDescending();
 				DrawChart();
 				SelectedEndDate = DateTime.Now;
 				SelectedStartDate = App.DataRepository.GetOldestDate();
@@ -334,9 +390,9 @@ namespace Miljokaz.ViewModels
 		{
 			try
 			{
-				
+
 				App.DataRepository.AddColors();
-				
+
 			}
 			catch (Exception ex)
 			{
@@ -388,22 +444,9 @@ namespace Miljokaz.ViewModels
 			UserItems.Clear();
 			UserItems = App.DataRepository.GetDataRange(SelectedStartDate, SelectedEndDate);
 			DrawChart();
-			ConvertToDisplayData();
+			SortByDateDescending();
 		}
 
-
-		public void EditItemById()
-		{
-			ItemModel itemModel = UserItems.FirstOrDefault(t => t.ItemId == ItemId);
-			if (itemModel != null)
-			{
-				EditDate = itemModel.dateTime;
-				EditAmount = itemModel.Amount;
-			}
-
-		}
-		
-	
 
 		public void InsertNewItem()
 		{
@@ -426,7 +469,7 @@ namespace Miljokaz.ViewModels
 
 				}
 				else if (ItemAmountEntry == 0)
-				{ 
+				{
 					Application.Current.MainPage.DisplayAlert("", "Please add amount!", "OK");
 					return;
 				}
@@ -436,16 +479,16 @@ namespace Miljokaz.ViewModels
 					string category = SelectedCategory.CategoryName.ToString();
 					string HexColor = SelectedCategory.ColorCode;
 					currentDate = DateTime.Now;
-					App.DataRepository.AddItem(new ItemModel { ItemCategory = category, dateTime = currentDate, Amount = ItemAmountEntry, ItemCategoryHexClor = HexColor, ItemDescription = ItemDescriptionEntry }); 
+					App.DataRepository.AddItem(new ItemModel { ItemCategory = category, dateTime = currentDate, Amount = ItemAmountEntry, ItemCategoryHexClor = HexColor, ItemDescription = ItemDescriptionEntry });
 
 					UserItems.Clear();
 					UserItems = App.DataRepository.GetAllItems();
 					DisplayData.Clear();
-					ConvertToDisplayData();
+					SortByDateDescending();
 					Application.Current.MainPage.DisplayAlert("", "New expenditure added!", "OK");
 					DrawChart();
 				}
-				
+
 
 			}
 			catch (Exception ex)
@@ -456,15 +499,86 @@ namespace Miljokaz.ViewModels
 
 
 		}
-		public void ConvertToDisplayData()
+		public async void InsertEditedItem()
 		{
 			try
 			{
-				
+				if (SelectedCategory.CategoryName.ToString() == null)
+				{
+
+					Application.Current.MainPage.DisplayAlert("", "Please select a category!", "OK");
+
+					return;
+				}
+
+				else if (EditAmount == 0)
+				{
+					Application.Current.MainPage.DisplayAlert("", "Please add amount!", "OK");
+					return;
+				}
+
+				else if (EditAmount != 0) { }
+				{
+					string category = SelectedCategory.CategoryName.ToString();
+					string HexColor = SelectedCategory.ColorCode;
+					App.DataRepository.UpdateItem(ItemId, new ItemModel { ItemId = ItemId, ItemCategory = category, dateTime = EditDate, Amount = EditAmount, ItemCategoryHexClor = HexColor, ItemDescription = EditDescription });
+
+					UserItems.Clear();
+					UserItems = App.DataRepository.GetAllItems();
+					DisplayData.Clear();
+					Application.Current.MainPage.DisplayAlert("", "Item successfully edited!", "OK");
+					DrawChart();
+					SelectedAllItemsAsync();
+				}
+
+
+			}
+			catch (Exception ex)
+			{
+
+				Debug.WriteLine(ex.ToString());
+			}
+
+
+		}
+
+		// ListView sorting
+
+		public void SortByDateDescending()
+		{
+			SortAndConvertToDisplayData(item => item.dateTime, descending: true);
+		}
+
+		public void SortByDateAscending()
+		{
+			SortAndConvertToDisplayData(item => item.dateTime, descending: false);
+		}
+
+		public void SortByCategoryDescending()
+		{
+			SortAndConvertToDisplayData(item => item.ItemCategory, descending: true);
+		}
+
+		public void SortByCategoryAscending()
+		{
+			SortAndConvertToDisplayData(item => item.ItemCategory, descending: false);
+		}
+		public void SortAndConvertToDisplayData<TKey>(Func<ItemModel, TKey> keySelector, bool descending = false)
+		{
+			try
+			{
 				DisplayData.Clear();
 
+				IEnumerable<ItemModel> orderedUserItems;
 
-				var orderedUserItems = UserItems.OrderByDescending(item => item.dateTime);
+				if (descending)
+				{
+					orderedUserItems = UserItems.OrderByDescending(keySelector);
+				}
+				else
+				{
+					orderedUserItems = UserItems.OrderBy(keySelector);
+				}
 
 				foreach (var itemModel in orderedUserItems)
 				{
@@ -474,13 +588,12 @@ namespace Miljokaz.ViewModels
 						Id = itemModel.ItemId,
 						Category = itemModel.ItemCategory,
 						dateTimeString = itemModel.dateTime.ToString("dd/MM/yy"),
-						AmountString = string.Concat(amountToString + " €"),
+						AmountString = string.Concat(amountToString, " €"),
 						DisplayColor = Color.Parse(itemModel.ItemCategoryHexClor),
 						Description = itemModel.ItemDescription,
 						CreatedDate = itemModel.dateTime
 					});
 				}
-
 			}
 			catch (Exception ex)
 			{
@@ -490,7 +603,7 @@ namespace Miljokaz.ViewModels
 
 
 
-		public async void InsertNewCategory() //pretumbati da se sprema u već kreiranu tablicu kao update
+		public async void InsertNewCategory() 
 		{
 			try
 			{
@@ -500,12 +613,12 @@ namespace Miljokaz.ViewModels
 					return;
 
 				}
-				else if (SelectedColorItem != null)
+				else if (SelectedColorItem == null)
 				{
 					Application.Current.MainPage.DisplayAlert("", "Please select color!", "OK");
 					return;
 				}
-				else 
+				else
 				{
 
 					SKColor selectedColor = SKColor.Parse(selectedColorItem.ColorCode);
@@ -526,27 +639,31 @@ namespace Miljokaz.ViewModels
 			}
 		}
 
-		
-		private async void SelectedEditItem() // samo select odabranog modela, bez kategorije?
+		public async void EditCategory()
+		{
+			//implemenntirati u EditItemPage
+		}
+
+		#endregion
+
+		#region Navigacija
+
+		private async void EditSelectedItem()
 		{
 			if (SelectedItem != null)
 			{
 				ItemId = SelectedItem.Id;
-				EditItemById();
 
-				if (UserItems != null)
+				ItemModel matchingItemModel = UserItems.FirstOrDefault(itemModel => itemModel.ItemId == ItemId);
+
+				if (matchingItemModel != null)
 				{
-					ItemModel matchingItemModel = UserItems.FirstOrDefault(itemModel => itemModel.ItemId == ItemId);
+					EditDate = matchingItemModel.dateTime;
+					EditAmount = matchingItemModel.Amount;
+					EditDescription = matchingItemModel.ItemDescription;
 
-					//if (matchingItemModel != null)
-					//{
-					//	ItemModel matchingTypeModel = UserCategories.FirstOrDefault(typeModel => typeModel.Type == matchingDataModel.Type);
-
-					//	if (matchingTypeModel != null)
-					//	{
-					//		SelectedCategory = matchingTypeModel;
-					//	}
-					//}
+					string localCategory = matchingItemModel.ItemCategory;
+					SelectedCategory = UserCategories.FirstOrDefault(c => c.CategoryName == localCategory);
 				}
 
 				await Shell.Current.GoToAsync("//EditItem");
@@ -556,49 +673,8 @@ namespace Miljokaz.ViewModels
 				Debug.WriteLine("SelectedItem is null");
 			}
 		}
-		public async void SaveEditedType() // isto presložiti
-		{
-			//try
-			//{
-			//	string typeString = SelectedCategory.Type.ToString();
-
-			//	string HexColor = SelectedCategory.typeHexColor;
-			//	string newType = SelectedCategory.Type;
-			//	if (EditAmount != 0)
-			//	{
-			//		DataModel updatedModel = new DataModel
-			//		{
-			//			Id = ItemId,
-			//			Type = newType,
-			//			dateTime = EditDate,
-			//			Amount = EditAmount,
-			//			dataHexColor = HexColor
-			//		};
-
-			//		App.DataRepository.UpdateItem(ItemId, updatedModel);
-
-			//		UpdateChart();
-
-			//		await Shell.Current.GoToAsync("//AllItems");
-			//		Application.Current.MainPage.DisplayAlert("", "Item successfully edited!", "OK");
-			//	}
-			//	else
-			//	{
-			//		Application.Current.MainPage.DisplayAlert("", "Please add amount!", "OK");
-
-			//	}
-			//}
-			//catch (Exception ex)
-			//{
-			//	Application.Current.MainPage.DisplayAlert("", "Please select type!", "OK");
-
-			//	Debug.WriteLine(ex.ToString());
-			//}
-		}
-		#endregion
 
 
-		#region Navigacija
 
 		public async void SelectedNewItem()
 		{
@@ -608,7 +684,7 @@ namespace Miljokaz.ViewModels
 
 			DisplayAvailableColors = new ObservableCollection<DisplayModel>();
 
-			foreach (var item in CategoryPickerList) 
+			foreach (var item in CategoryPickerList)
 			{
 				var displayModel = new DisplayModel()
 				{
@@ -627,7 +703,7 @@ namespace Miljokaz.ViewModels
 		private async void SelectedAllItemsAsync()
 		{
 			await Shell.Current.GoToAsync("//AllItems");
-			ConvertToDisplayData();
+			SortByDateDescending();
 
 		}
 		public async void CancelEdit()
@@ -635,9 +711,10 @@ namespace Miljokaz.ViewModels
 			await Shell.Current.GoToAsync("//AllItems");
 		}
 
-		public async void DeleteEdit()
+		public async void DeleteItem()
 		{
-			App.DataRepository.Delete(ItemId);
+			ItemId = SelectedItem.Id;
+			App.DataRepository.DeleteItem(ItemId);
 			UpdateChart();
 			await Shell.Current.GoToAsync("//AllItems");
 			Application.Current.MainPage.DisplayAlert("", "Item successfully deleted!", "OK");
